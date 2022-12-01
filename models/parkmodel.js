@@ -1,10 +1,18 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { Schema, Types } = mongoose;
 
 const imageSchema = new Schema({
 url: String,
 alt: String,
 caption: String,
+});
+
+const commentSchema = new Schema({
+username: String,
+text: String,
+createdOn: {type: Date, default: Date.now},
+commentID: {type: Schema.Types.ObjectId, default: () => new Types.ObjectId()},
+
 });
 
 const parkSchema = new Schema({
@@ -15,18 +23,15 @@ const parkSchema = new Schema({
   hours: {type: Array, required: false},
   city: {type: String, required: true},
   state: {type: String, required: true},
-  zip: {type: Number, required: true},
+  zip: {type: String, required: false},
   images: [imageSchema],
-  lat: {type: Number},
-  long: {type: Number},
-  shop: {type: Boolean, default: false},
-  playground: {type: Boolean, default: false},
-  hasTrails: {type: Boolean, default: false},
-  water: {type: Boolean, default: false},
+  cost: {type: String, required: false},
   allowsDogs: {type: Boolean, default: false},
-  free: {type: Boolean, default: false},
-  activities: {type: Array, required: true, default: []},
-  
+  activities: {type: Array, required: false, default: []},
+  lat: {type: String},
+  long: {type: String},
+  parkType: {type: String, required: false},
+  comments: [commentSchema],
   
 });
 
