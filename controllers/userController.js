@@ -59,7 +59,7 @@ const login = async (req, res, next) => {
         } else{
             
             delete userFound.password;
-            console.log(userFound);
+          
             const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET);
             res.status(201).json({
                 _id: userFound._id,
@@ -80,4 +80,32 @@ const login = async (req, res, next) => {
 
 };
 
-module.exports = { register, login };
+const getUserDetails = async (req, res, next) => {
+
+    if (!req.user){
+        res.status(403);
+        next(new Error("please log in"));
+    }else {
+        res.status(200).json(req.user);
+    }
+};
+
+const addFavorite = async (req, res, next) => {
+
+    if (!req.user){
+        res.status(403);
+        next(new Error("please log in"));
+    }else {
+        
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+            $push:{
+                favorites:req.body.parkID
+            }
+           });
+           res.status(201).json(updatedUser);
+    }
+
+    // populate mongoose IDs for park favorites, remove favorite 
+};
+
+module.exports = { register, login, getUserDetails, addFavorite };

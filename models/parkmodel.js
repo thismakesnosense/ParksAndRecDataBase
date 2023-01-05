@@ -10,6 +10,7 @@ caption: String,
 const commentSchema = new Schema({
 username: String,
 text: String,
+userId: Schema.Types.ObjectId,
 createdOn: {type: Date, default: Date.now},
 commentID: {type: Schema.Types.ObjectId, default: () => new Types.ObjectId()},
 
