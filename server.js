@@ -6,11 +6,14 @@ const connectDB = require('./db/config');
 const userRoutes = require('./routes/userRoutes');
 const handleErrors = require('./middleware/errorHandler');
 const parkRoutes = require('./routes/parkRoutes');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 connectDB();
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
   res.send('Hello World!')

@@ -1,9 +1,10 @@
 const Park = require("../models/parkmodel");
+const {userMatch} = require("../utils/helpers")
 
 
 const getAllParks = async (req, res, next) => {
     // try {
-       
+       console.log("cookies", req.cookies);
     if (!req.user){
         res.status(403);
         next(new Error("you are not authorized"));
@@ -93,24 +94,31 @@ const updateComment = async (req, res, next) => {
         next(new Error("please log in"));
     }else {
         const park = await Park.findById(req.params.id);
-        let index;
-        for (let i=0; i<park.comments.length; i++){
-         const comment = park.comments[i]
-         
-         
-         if (comment.commentID.toString() === req.params.commentID){
-            index = i
-            break
-         }
-        };
-        console.log("commentindex", index);
-       const updatedPark = await Park.findByIdAndUpdate(req.params.id, {
-        $set:{
-           [`comments.${index}.text`]: req.body.text
+        const matches = userMatch(req.params.commentID, req.user._id, park.comments);
+        if (!matches) {
+            res.status(403);
+            next(new Error("not authorized"));
+        }else {
+            let index;
+            for (let i=0; i<park.comments.length; i++){
+             const comment = park.comments[i]
+             
+             
+             if (comment.commentID.toString() === req.params.commentID){
+                index = i
+                break
+             }
+            };
+            console.log("commentindex", index);
+           const updatedPark = await Park.findByIdAndUpdate(req.params.id, {
+            $set:{
+               [`comments.${index}.text`]: req.body.text
+            }
+           });
+           // look at set logic 
+           res.status(201).json(updatedPark);
         }
-       });
-       // look at set logic 
-       res.status(201).json(updatedPark);
+        
     }
 }
 
@@ -120,18 +128,26 @@ const deleteComment = async (req, res, next) => {
         res.status(403);
         next(new Error("please log in"));
     }else {
-        
-       const deleteComment = await Park.findByIdAndUpdate(req.params.id, {
-        $pull:{
-            comments:{commentID: req.params.commentID}
+        const park = await Park.findById(req.params.id);
+        const matches = userMatch(req.params.commentID, req.user._id, park.comments);
+        if (!matches) {
+            res.status(403);
+            next(new Error("not authorized"));
+        }else {
+            // finish delete comment and send respopnse.
+            const deleteComment = await Park.findByIdAndUpdate(req.params.id, {
+                $pull:{
+                    comments:{commentID: req.params.commentID}
+                }
+               });
+               res.status(201).json(deleteComment);
         }
-       });
-       res.status(201).json(deleteComment);
+       
     }
 };
 
 
 
-//update comment and delete a comment then admin delete park 
+
 module.exports = { getAllParks, addNewPark, updatePark, commentPark, updateComment, deletePark, deleteComment }
 

@@ -61,6 +61,7 @@ const login = async (req, res, next) => {
             delete userFound.password;
           
             const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET);
+            res.cookie("token", token, {maxAge:2*60*1000});
             res.status(201).json({
                 _id: userFound._id,
                 name: userFound.name,
@@ -80,13 +81,22 @@ const login = async (req, res, next) => {
 
 };
 
+const logOut = async (req, res, next) => {
+
+    res.clearCookie("token");
+
+}
+
+// make logout function the clears the cookies 
+
 const getUserDetails = async (req, res, next) => {
 
     if (!req.user){
         res.status(403);
         next(new Error("please log in"));
     }else {
-        res.status(200).json(req.user);
+        const foundUser = await User.findById(req.user._id).populate('favorites');
+        res.status(200).json(foundUser);
     }
 };
 
@@ -108,4 +118,13 @@ const addFavorite = async (req, res, next) => {
     // populate mongoose IDs for park favorites, remove favorite 
 };
 
-module.exports = { register, login, getUserDetails, addFavorite };
+
+const removeFavorite = async (req, res, next) => {
+     
+    if (!req.user){
+        res.status(403);
+        next(new Error("please log in"));
+    }
+};
+
+module.exports = { register, login, getUserDetails, addFavorite, logOut };
